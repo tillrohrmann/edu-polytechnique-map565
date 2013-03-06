@@ -1,0 +1,114 @@
+\documentclass[a4paper, 12pt, titlepage]{article}
+
+% Including needed packages
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\title
+{{\em MAP 565 - Time series analysis}\\
+Mini-project - Smoothing trajectories using Kalman filter\\
+{\bf Report}}
+\author{KLINTEFELT-COLLET Philippe \and ROHRMANN Till}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Question}
+
+Given the position $P(t)$, velocity $V(t)$ and acceleration $A(t)$ of an object moving along a one dimensional axis. 
+Furthermore, given the time discretization by $t_k=\delta k$ for $k\in \mathbb{Z}$.
+The discretization quantities are denoted by $P_k=P(t_k)$, $V_k=V(t_k)$ and $A_k=A(t_k)$.
+Assuming that $A(t)\approx A(t_{k-1})$ for $t\in (t_{k-1},t_k)$ for all $k\in\mathbb{Z}$ and that the discretization step $\delta$ is small.
+Show that the following equations hold:
+\begin{eqnarray}
+	V_k &\approx& V_{k-1} + \delta A_{k-1}\\
+	P_k &\approx& P_{k-1} + \delta V_{k-1} + \frac{\delta^2}{2} A_{k-1}
+\end{eqnarray}
+
+\paragraph{Proof}
+
+Since $A(t)$ is the derivative of $V(t)$ it holds.
+\begin{eqnarray}
+	V(t_k) - V(t_{k-1}) &=& \int_{t_{k-1}}^{t_k} A(t)\ dt
+\end{eqnarray}
+
+By using the assumption of $A(t)\approx A(t_{k-1})$ for $t\in (t_{k-1},t_k)$ for all $k\in\mathbb{Z}$ we can transform the integral.
+\begin{eqnarray}
+	V_k &\approx& V_{k-1} + A_{k-1} \int_{t_{k-1}}^{t_k}\ dt \\
+	&=& V_{k-1}+\delta A_{k-1}
+\end{eqnarray}
+
+The same reasoning holds for the position. 
+Hence we obtain the following derivation.
+
+\begin{eqnarray}
+	P(t_k) - P(t_{k-1}) &=& \int_{t_{k-1}}^{t_k} V(t)\ dt\\
+	P_k &=& P_{k-1} + \int_{t_{k-1}}^{t_k}\left( V_{t_{k-1}} + \int_{t_{k-1}}^{t} A(t^{\prime})\ dt^{\prime}\right)\ dt\\
+	P_k &\approx& P_{k-1} + \delta V_{t_{k-1}} + \int_{t_{k-1}}^{t_k} A_{k-1}(t-t_{k-1})\ dt\\
+	&=& P_{k-1} + \delta V_{t_{k-1}} + \frac{\delta^2}{2} A_{k-1}	
+\end{eqnarray}
+
+\section{Question}
+
+The state vector is defined as following: $\pmb{X}_t=(P_{k,1},P_{k,2},A_{k,1},A_{k,2})^T$.
+Assuming 
+\begin{eqnarray}
+	\pmb{X}_{k} &=& \Phi \pmb{X}_{k-1} + \Pi \pmb{A}_{k-1} \label{eq}\\
+	\Phi &=& \left(
+		\begin{array}{cccc}
+			1 &0 & \delta & 0\\
+			0 & 1& 0 & \delta\\
+			0 & 0& 1& 0\\
+			0 & 0& 0& 1
+		\end{array}
+	\right)\\
+	\Pi &=& \left(
+		\begin{array}{cc}
+			\delta^2/2 & 0\\
+			0 & \delta^2/2\\
+			\delta& 0\\
+			0 & \delta
+		\end{array}
+	\right)\\
+	\pmb{A}_{k-1} &=& \left (
+		\begin{array}{c}
+			A_{k-1,1}\\
+			A_{k-1,2}
+		\end{array}
+	\right)
+\end{eqnarray}
+
+\paragraph{What are the conditions that the state-space can be modelled like that?}
+This modelling is only correct, if the velocity $V(t)$ equals the acceleration $A(t)$. 
+This implies $V(t)=A(t)=\frac{dV}{dt}$ and consequently $V(t)=A(t)=e^t$.
+
+\section{Question}
+
+Assuming the state-space vector now as $\pmb{X}_t=(P_{k,1},P_{k,2},V_{k,1},V_{k,2})^T$.
+Furthermore, assume the sequences $(A_{t,1})$ and $A_{t,2}$ are uncorrelated white noise with variance $\sigma^2$.
+The equation (\ref{eq}) can now be transformed into:
+\begin{eqnarray}
+	\pmb{X}_{k} &=& \Phi \pmb{X}_{k-1} + \pmb{W}_{k-1}\\
+	\pmb{W}_{k} &\sim& \mathcal{N}(0,Q)\\
+	Q&=& \left(
+		\begin{array}{cccc}
+		\delta^4/4& 0& \delta^3/2 & 0\\
+		0 & \delta^4/4 & 0& \delta^3/2\\
+		\delta^3/2 & 0& \delta^2 &0\\
+		0 & \delta^3/2 & 0 & \delta^2
+		\end{array}
+	\right)\sigma^2
+\end{eqnarray}
+
+\section{Question}
+
+The implementation can be found in the file kalman_filter.m.
+
+\section{Question}
+
+Testing
+
+\end{document}
