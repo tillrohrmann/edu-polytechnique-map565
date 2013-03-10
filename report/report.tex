@@ -4,6 +4,7 @@
 \usepackage[margin=2cm]{geometry}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{graphicx}
 
 \title
 {{\em MAP 565 - Time series analysis}\\
@@ -88,7 +89,7 @@ This implies $V(t)=A(t)=\frac{dV}{dt}$ and consequently $V(t)=A(t)=e^t$.
 \section{Question}
 
 Assuming the state-space vector now as $\pmb{X}_t=(P_{k,1},P_{k,2},V_{k,1},V_{k,2})^T$.
-Furthermore, assume the sequences $(A_{t,1})$ and $A_{t,2}$ are uncorrelated white noise with variance $\sigma^2$.
+Furthermore, assume the sequences $(A_{t,1})$ and $(A_{t,2})$ are uncorrelated white noises with variance $\sigma^2$.
 The equation (\ref{eq}) can now be transformed into:
 \begin{eqnarray}
 	\pmb{X}_{k} &=& \Phi \pmb{X}_{k-1} + \pmb{W}_{k-1}\\
@@ -105,10 +106,123 @@ The equation (\ref{eq}) can now be transformed into:
 
 \section{Question}
 
-The implementation can be found in the file kalman_filter.m.
+The implementation can be found in the file kalman.m.
+The whole program can be run by executing run.m.
 
 \section{Question}
 
-Testing
+\paragraph{Testing}
+
+The implemented algorith was applied to the provided data. To obtain the presented results in Figure \ref{fig:1}, Figure \ref{fig:2} and Figure \ref{fig:3} we set $\delta=1$, $\sigma=0.2$, $\kappa=10$ and $\rho$ was estimated to have the value $\rho=4.9428$.
+
+\begin{figure}
+	\includegraphics[width=15cm]{images/1trajectory.png}
+	\caption{Kalman filter applied to first observation series. Blue circled-dashed line indicates the observations, red line the filtered estimation and green line the forecasted values.}
+	\label{fig:1}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=15cm]{images/2trajectory.png}
+	\caption{Kalman filter applied to second observation series. Blue circled-dashed line indicates the observations, red line the filtered estimation and green line the forecasted values.}
+	\label{fig:2}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=15cm]{images/refinedTrajectory.png}
+	\caption{Kalman filter applied to the refined observation series. Blue circled-dashed line indicates the observations, red line the filtered estimation and green line the forecasted values.}
+	\label{fig:3}
+\end{figure}
+
+\paragraph{Estimating $\rho^2$}
+
+For the observations the following equation holds:
+
+\begin{eqnarray}
+	\pmb{Y}_k &=& \Psi \pmb{X}_k + \pmb{V}_k \label{eqn:2}
+\end{eqnarray}
+where $\pmb{V}_k \sim \mathcal{N}(0,R)$ where $R=\rho^2\pmb{Id}_{2}$ and $\pmb{V}_k$ decorrelated from $\pmb{V}_j$ with $k\not=j$.
+In order to estimate the parameter $\rho$ given to series of observations $\pmb{Y}$ and $\pmb{Y}^{\prime}$, we can calculate the difference and then use the ML-estimator for the variance of a Gaussian random variable.
+
+\begin{eqnarray}
+	\pmb{Y}_k - \pmb{Y}^{\prime}_k &=& \pmb{V}_k - \pmb{V}_{k}^{\prime} \label{eqn:1}
+\end{eqnarray}
+
+$\pmb{V}_k$ and $\pmb{V}^{\prime}_k$ are decorrelated (white noise) and since they are Gaussian variables they are also independent.
+Therefore $\pmb{V}_k - \pmb{V}_{k}^{\prime}$ is also Gaussian distributed with $Var(\pmb{V}_k - \pmb{V}_{k}^{\prime}) = 2\ Var(\pmb{V}_k)$.
+Since $\pmb{V}_{k,1}$ and $\pmb{V}_{k,2}$ are uncorrelated and thus independent we can consider each component as an independent realization of a Gaussian random variable with mean $\mu=0$ and variance $\sigma^2=\rho^2$.
+Hence, $Var(\pmb{V}_{k,1} - \pmb{V}_{k,1}^{\prime}) = Var(\pmb{V}_{k,2} - \pmb{V}_{k,2}^{\prime}) =2\ \rho^2$.
+By applying the ML-estimator for the variance of a Gaussian random variable
+\begin{eqnarray}
+	\hat{\sigma}^2 &=& \frac{1}{n-1}\sum_{i=1}^{n}(X_{i}-\hat{\mu})^2
+\end{eqnarray}
+we obtain finally our estimator of $\rho$.
+\begin{eqnarray}
+	2\ \hat{\rho}^2 &=& \frac{1}{2n-1}\left(\sum_{i=1}^{n}(\pmb{V}_{k,1} - \pmb{V}_{k,1}^{\prime})^2 + \sum_{i=1}^{n}(\pmb{V}_{k,2} - \pmb{V}_{k,2}^{\prime})^2 \right)
+\end{eqnarray}
+
+
+\paragraph{Initialization values}
+
+In order to start the Kalman filter, one has to provide it with initial values.
+If one does not know anything about the starting position of the object, one should take the first evidence one finds.
+That is to say, the estimation $\pmb{X}_{1\mid 1}$ of the position applied to the observation matrix should equal the first observation $\pmb{Y}_1$.
+
+\begin{eqnarray}
+	\pmb{X}_{1\mid 0} &=& \Phi \pmb{0} \\
+	\pmb{X}_{1\mid 1} &=& \pmb{X}_{1\mid 0} + K_1(\pmb{Y}_1 -\Psi \pmb{X}_{1\mid 0})\\
+	&=& \Sigma_{1\mid 0} \Psi^T \left[ \Psi\Sigma_{1\mid 0} \Psi^T +R \right]^{-1}\pmb{Y}_1\\
+	\Psi\pmb{X}_{1\mid 1} &=& \Psi \Sigma_{1\mid 0} \Psi^T \left[ \Psi\Sigma_{1\mid 0} \Psi^T +R \right]^{-1}\pmb{Y}_1
+\end{eqnarray}
+
+By setting the initial value of the covariance matrix $\Sigma_0=\kappa^2 \pmb{Id}_4$, we obtain:
+
+\begin{eqnarray}
+	\Sigma_{1\mid 0} &=& \kappa^2\Phi \Phi^T + Q\\
+	\Psi \Sigma_{1\mid 0} \Psi^T + R &=& \kappa^2 \Psi \Phi \Phi^T \Psi^T + \Psi Q \Psi^T + R
+\end{eqnarray}
+
+If $\kappa \gg \rho$ and $\kappa \gg \sigma$, then $\kappa^2 \Psi \Phi \Phi^T \Psi^T + \Psi Q \Psi^T + R \approx \kappa^2 \Psi \Phi \Phi^T \Psi^T$ and thus
+
+\begin{eqnarray}
+	\Psi\pmb{X}_{1\mid 1} &\approx& \Psi \Sigma_{1\mid 0} \Psi^T \left[ \Psi\Sigma_{1\mid 0} \Psi^T \right]^{-1}\pmb{Y}_1 = \pmb{Y}_1 
+\end{eqnarray}
+
+\paragraph{Influence of $\sigma^2$}
+
+The value $\sigma^2$ influences how much effect the current observation with regard to the past observations has on the filtered estimation. 
+That is to say, if the value $\sigma^2$ is high, the filtered estimation approaches the observations, whereas if the value is small, the past (average) observations determine more strongly the next filtered estimation value. 
+This effect is illustrated in Figure \ref{fig:4} where the value of $\sigma^2=\frac{1}{100}$, Figure \ref{fig:5} where the value of $\sigma^2=1$ and Figure \ref{fig:6} where the value of $\sigma^2=100$. 
+To conclude, the value of $\sigma^2$ determines the smoothness of the filtering. 
+The lower its value, the smoother the filtering.
+
+\begin{figure}
+	\includegraphics[width=15cm]{images/sigma01.png}
+	\caption{Influence of $sigma$ on the filtered estimations. $\sigma^2=\frac{1}{100}$.}
+	\label{fig:4}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=15cm]{images/sigma1.png}
+	\caption{Influence of $sigma$ on the filtered estimations. $\sigma^2=1$.}
+	\label{fig:5}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=15cm]{images/sigma10.png}
+	\caption{Influence of $sigma$ on the filtered estimations. $\sigma^2=100$.}
+	\label{fig:6}
+\end{figure}
+
+\paragraph{Improving filtering results}
+
+In order to improve the filtering results, one has to decrease the observation noise. 
+Since the observations are specified by equation \ref{eqn:2} and we have $2$ independent observation trajectories, we can achieve this goal by calculating their average.
+This cuts the variance of the observation noise by the factor 2, hence improving the accuracy of the filtering results.
+
+\begin{eqnarray}
+	Var \left( \frac{1}{2}(\pmb{Y}_k+\pmb{Y}^{\prime}_k) \right)&=& \Psi\pmb{X}_k + Var \left( \frac{1}{2} (\pmb{V}_k + \pmb{V}^{\prime}_k )\right)\\
+	&=& \Psi\pmb{X}_k + \frac{1}{2} Var\left(\pmb{V}_k \right)
+\end{eqnarray}
+The last equation follows from the fact that $\pmb{V}_k$ and $\pmb{V}^{\prime}_k$ are decorrelated and thus independent.
 
 \end{document}

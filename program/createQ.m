@@ -1,4 +1,6 @@
 function [ Q ] = createQ( timestep, sigma )
+% This function creates the matrix Q as described in the report.
+%
 
 variance = sigma^2;
 
