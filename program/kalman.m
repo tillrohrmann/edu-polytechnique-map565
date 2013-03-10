@@ -6,9 +6,9 @@ dim = length(initialMean);
 X_filtered = initialMean;
 Sigma_filtered = initialSigma;
 
-X_fi = zeros(n+1,dim);
+X_fi = zeros(n,dim);
 X_fo = zeros(n,dim);
-Sigma_fi = zeros(n+1,dim*dim);
+Sigma_fi = zeros(n,dim*dim);
 Sigma_fo = zeros(n,dim*dim);
 
 for i = 1:n

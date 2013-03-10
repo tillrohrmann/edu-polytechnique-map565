@@ -6,8 +6,9 @@ data1 = importdata('traj1.dat');
 data2 = importdata('traj2.dat');
 dim = 4;
 timestep = 1;
-rho = 1;
-sigma = 1;
+rho = estimateRho(data1,data2);
+sigma = 0.01;
+kappa = 10;
 
 observations =data1;
 n = length(data1);
@@ -17,7 +18,7 @@ B = 0;
 exogenousInput = zeros(n,1);
 
 initialMean = zeros(dim,1);
-initialSigma = zeros(dim,dim);
+initialSigma = kappa^2*eye(4);
 
 Phi = createPhi(timestep);
 Psi = createPsi();
