@@ -10,7 +10,7 @@
 {{\em MAP 565 - Time series analysis}\\
 Mini-project - Smoothing trajectories using Kalman filter\\
 {\bf Report}}
-\author{KLINTEFELT-COLLET Philippe \and ROHRMANN Till}
+\author{KLINTEFELT COLLET Philippe \and ROHRMANN Till}
 \date{}
 
 \begin{document}
@@ -82,15 +82,15 @@ Assuming
 	\right)
 \end{eqnarray}
 
-\paragraph{What are the conditions that the state-space can be modelled like that?}
-This modelling is only correct, if the velocity $V(t)$ equals the acceleration $A(t)$. 
-This implies $V(t)=A(t)=\frac{dV}{dt}$ and consequently $V(t)=A(t)=e^t$.
+\paragraph{What conditions must hold for the state-space to be modelled like that?}
+This modelling is only correct if the velocity $V(t)$ equals the acceleration $A(t)$. 
+This implies $V(t)=A(t)=\frac{dV}{dt}$ and consequently $V(t)=A(t)=Ce^t$ where $C$ is any constant.% It was ''$V(t)=A(t)=e^t$' but isn't ''$V(t)=A(t)=Ce^t$ where $C$ is any constant'' more accurate? Or is that too obvious/irrelevant?
 
 \section{Question}
 
 Assuming the state-space vector now as $\pmb{X}_t=(P_{k,1},P_{k,2},V_{k,1},V_{k,2})^T$.
 Furthermore, assume the sequences $(A_{t,1})$ and $(A_{t,2})$ are uncorrelated white noises with variance $\sigma^2$.
-The equation (\ref{eq}) can now be transformed into:
+The equation \eqref{eq} can now be transformed into: %Protip: Use \eqref{} instead of (\ref{}) : It yields the same result.
 \begin{eqnarray}
 	\pmb{X}_{k} &=& \Phi \pmb{X}_{k-1} + \pmb{W}_{k-1}\\
 	\pmb{W}_{k} &\sim& \mathcal{N}(0,Q)\\
@@ -113,7 +113,7 @@ The whole program can be run by executing run.m.
 
 \paragraph{Testing}
 
-The implemented algorith was applied to the provided data. To obtain the presented results in Figure \ref{fig:1}, Figure \ref{fig:2} and Figure \ref{fig:3} we set $\delta=1$, $\sigma=0.2$, $\kappa=10$ and $\rho$ was estimated to have the value $\rho=4.9428$.
+The implemented algorithm was applied to the provided data. To obtain the results presented in Figure \ref{fig:1}, Figure \ref{fig:2} and Figure \ref{fig:3} we set $\delta=1$, $\sigma=0.2$, $\kappa=10$ and $\rho$ was estimated to have the value $\rho=4.9428$.
 
 \begin{figure}
 	\includegraphics[width=15cm]{images/1trajectory.png}
@@ -155,7 +155,7 @@ By applying the ML-estimator for the variance of a Gaussian random variable
 \begin{eqnarray}
 	\hat{\sigma}^2 &=& \frac{1}{n-1}\sum_{i=1}^{n}(X_{i}-\hat{\mu})^2
 \end{eqnarray}
-we obtain finally our estimator of $\rho$.
+we finally obtain our estimator of $\rho$.
 \begin{eqnarray}
 	2\ \hat{\rho}^2 &=& \frac{1}{2n-1}\left(\sum_{i=1}^{n}(\pmb{V}_{k,1} - \pmb{V}_{k,1}^{\prime})^2 + \sum_{i=1}^{n}(\pmb{V}_{k,2} - \pmb{V}_{k,2}^{\prime})^2 \right)
 \end{eqnarray}
@@ -163,8 +163,8 @@ we obtain finally our estimator of $\rho$.
 
 \paragraph{Initialization values}
 
-In order to start the Kalman filter, one has to provide it with initial values.
-If one does not know anything about the starting position of the object, one should take the first evidence one finds.
+In order to start the Kalman filter, initial values have to be provided to it.
+If nothing is known about the starting position of the object, the first found evidence should be used.
 That is to say, the estimation $\pmb{X}_{1\mid 1}$ of the position applied to the observation matrix should equal the first observation $\pmb{Y}_1$.
 
 \begin{eqnarray}
@@ -216,7 +216,7 @@ The lower its value, the smoother the filtering.
 \paragraph{Improving filtering results}
 
 In order to improve the filtering results, one has to decrease the observation noise. 
-Since the observations are specified by equation \ref{eqn:2} and we have $2$ independent observation trajectories, we can achieve this goal by calculating their average.
+Since the observations are specified by equation \eqref{eqn:2} and we have $2$ independent observation trajectories, we can achieve this goal by calculating their average.
 This cuts the variance of the observation noise by the factor 2, hence improving the accuracy of the filtering results.
 
 \begin{eqnarray}
